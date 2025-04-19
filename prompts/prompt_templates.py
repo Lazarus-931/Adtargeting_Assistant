@@ -3,6 +3,82 @@ from typing import Dict, Any
 
 
 
+from antml:function_calls import artifacts
+
+artifacts.create(
+    "prompt_templates.py",
+    "application/vnd.ant.code",
+    language="python",
+    title="Prompt Templates",
+    content="""# prompt_templates.py
+from typing import Dict, Any, List"""
+
+class PromptManager:
+    """Manages and formats prompts for different analysis agents"""
+    def __init__(self):
+        self.templates = {
+            "demographics": DEMOGRAPHICS_PROMPT,
+            "interests": INTERESTS_PROMPT,
+            "keywords": KEYWORDS_PROMPT,
+            "usage": USAGE_BEHAVIOR_PROMPT,
+            "satisfaction": SATISFACTION_BEHAVIOR_PROMPT,
+            "purchase": PURCHASE_BEHAVIOR_PROMPT,
+            "personality": PERSONALITY_PROMPT,
+            "lifestyle": LIFESTYLE_PROMPT,
+            "values": VALUES_PROMPT
+        }
+    
+    def get_prompt(self, agent_type: str, audience: str, context_data: List[str] = None) -> str:
+        """Format a prompt for the specified agent type"""
+        # Get the template
+        template = self.templates.get(agent_type)
+        
+        if not template:
+            raise ValueError(f"Unknown agent type: {agent_type}")
+        
+        # Format with audience
+        formatted_prompt = template.format(audience=audience)
+        
+        # Add context data if provided
+        if context_data:
+            context_text = "\\n\\nHere is relevant information from reviews and data:\\n"
+            context_text += "\\n".join([f"- {item}" for item in context_data])
+            formatted_prompt += context_text
+        
+        return formatted_prompt
+
+# Define the prompt templates
+DEMOGRAPHICS_PROMPT = '''You are an ad targeting agent specializing in demographic segmentation.
+
+Your task is to analyze the demographics of users who have used {audience} based on the provided reviews.
+
+Focus strictly on users from the following demographics (with their corresponding icons):
+👤 Age range
+⚧ Gender (limited to 'Male', 'Female', 'Both')
+📍 Location (limited to 'Urban areas', 'Suburban areas', 'Rural areas', 'Metropolitan areas')
+💰 Income level (limited to 'Low income', 'Lower-middle income', 'Middle income', 'Upper-middle income', 'High income')
+🎓 Education level (limited to 'High school or less', 'Some college', 'Bachelor's degree', 'Graduate degree')
+
+Important: Make reasonable assumptions if no direct information is found based on the demographics of typical {audience} users.
+
+Return a JSON object with this exact format:
+{{
+    "demographics": {{
+        "age_range": "string, e.g. '25-34'",
+        "gender": "string, one of ['Male', 'Female', 'Both']",
+        "location": "string, one of ['Urban areas', 'Suburban areas', 'Rural areas', 'Metropolitan areas']",
+        "income_level": "string, one of ['Low income', 'Lower-middle income', 'Middle income', 'Upper-middle income', 'High income']",
+        "education_level": "string, one of ['High school or less', 'Some college', 'Bachelor's degree', 'Graduate degree']",
+    }}
+}}
+'''
+
+# ... other prompt templates would follow
+"""
+)
+
+
+
 # Initialize OpenAI client
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 GPT_MODEL = os.getenv("GPT_MODEL")
