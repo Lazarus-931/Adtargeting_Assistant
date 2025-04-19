@@ -1,17 +1,6 @@
 
-from typing import Dict, Any
-
-
-
-from antml:function_calls import artifacts
-
-artifacts.create(
-    "prompt_templates.py",
-    "application/vnd.ant.code",
-    language="python",
-    title="Prompt Templates",
-    content="""# prompt_templates.py
-from typing import Dict, Any, List"""
+# prompts/prompt_templates.py
+from typing import Dict, Any, List
 
 class PromptManager:
     """Manages and formats prompts for different analysis agents"""
@@ -41,8 +30,8 @@ class PromptManager:
         
         # Add context data if provided
         if context_data:
-            context_text = "\\n\\nHere is relevant information from reviews and data:\\n"
-            context_text += "\\n".join([f"- {item}" for item in context_data])
+            context_text = "\n\nHere is relevant information from reviews and data:\n"
+            context_text += "\n".join([f"- {item}" for item in context_data])
             formatted_prompt += context_text
         
         return formatted_prompt
@@ -71,225 +60,260 @@ Return a JSON object with this exact format:
         "education_level": "string, one of ['High school or less', 'Some college', 'Bachelor's degree', 'Graduate degree']",
     }}
 }}
+
+Format the output exactly like this example:
+
+👥 User Demographics Analysis:
+
+👤 Age Range: 12-20
+⚧ Gender: Male
+📍 Location: Urban areas
+💰 Income Level: Low income
+🎓 Education Level: Bachelor's degree
 '''
 
-# ... other prompt templates would follow
-"""
-)
+INTERESTS_PROMPT = '''You are an ad targeting agent specializing in interest-based segmentation.
 
+Your task is:
 
+1. Search for product reviews and interest information related to users who have used {audience}.
+2. Focus strictly on users' interests, broken down into the following categories (with their corresponding icons):
+🏃 Activities (e.g., sports, fitness, gaming)
+💝 Preferences (e.g., brands, styles, features)
+🎯 Pastimes (e.g., hobbies, entertainment)
+🎁 Purchase Goals (e.g., personal use, gifts, sharing, group activities)
 
-# Initialize OpenAI client
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-GPT_MODEL = os.getenv("GPT_MODEL")
+Important: Make reasonable assumptions if no direct information is found based on the typical interests of {audience} users.
 
-
-DEMOGRAPHICS_PROMPT = """You are an ad targeting agent specializing in demographic segmentation.
-
-    Your task is to analyze the demographics of users who have used {audience} based on the provided reviews.
-
-    Focus strictly on users from the following demographics (with their corresponding icons):
-    👤 Age range
-    ⚧ Gender (limited to 'Male', 'Female', 'Both')
-    📍 Location (limited to 'Urban areas', 'Suburban areas', 'Rural areas', 'Metropolitan areas')
-    💰 Income level (limited to 'Low income', 'Lower-middle income', 'Middle income', 'Upper-middle income', 'High income')
-    🎓 Education level (limited to 'High school or less', 'Some college', 'Bachelor's degree', 'Graduate degree')
-
-    Important: Make reasonable assumptions if no direct information is found based on the demographics of typical {audience} users.
-
-    Return a JSON object with this exact format:
-    {{
-        "demographics": {{
-            "age_range": "string, e.g. '25-34'",
-            "gender": "string, one of ['Male', 'Female', 'Both']",
-            "location": "string, one of ['Urban areas', 'Suburban areas', 'Rural areas', 'Metropolitan areas']",
-            "income_level": "string, one of ['Low income', 'Lower-middle income', 'Middle income', 'Upper-middle income', 'High income']",
-            "education_level": "string, one of ['High school or less', 'Some college', 'Bachelor's degree', 'Graduate degree']",
-        }}
+Return a JSON object with this exact format:
+{{
+    "interests": {{
+        "activities": "string, list of activities",
+        "preferences": "string, list of preferences",
+        "pastimes": "string, list of pastimes",
+        "purchase_goals": "string, list of purchase intentions"
     }}
+}}
 
-    Format the output exactly like this example:
+Format the output for display with:
 
-    👥 User Demographics Analysis:
+👥 User Interests Analysis:
 
-    👤 Age Range: 12-20
-    ⚧ Gender: Male
-    📍 Location: Urban areas
-    💰 Income Level: Low income
-    🎓 Education Level: Bachelor's degree
-    • Recommendations: Highlight the educational benefits of remote control cars, such as improving hand-eye coordination and critical thinking skills, to appeal to parents in this demographic.
-"""
+🏃 Activities:
+- [List of activities]
 
-INTERESTS_PROMPT = """
-        **You are an ad targeting agent specializing in interest-based segmentation.**
+💝 Preferences:
+- [List of preferences]
 
-        **Your task is:**
+🎯 Pastimes:
+- [List of pastimes]
 
-        1. Search for product reviews and interest information related to users who have used {audience}.
-        2. Focus strictly on users' interests, broken down into the following categories (with their corresponding icons):
-        🏃 Activities (e.g., sports, fitness, gaming)
-        💝 Preferences (e.g., brands, styles, features)
-        🎯 Pastimes (e.g., hobbies, entertainment)
-        🎁 Purchase Goals (e.g., personal use, gifts, sharing, group activities)
-        
+🎁 Purchase Goals:
+- [List of purchase goals]
+'''
 
-        **Important:** Make reasonable assumptions if no direct information is found based on the typical interests of {audience} users.
+KEYWORDS_PROMPT = '''You are an ad targeting agent specializing in keyword and phrase segmentation.
 
-        **Output format:**
+Your task is:
 
-        Return a JSON object with this exact format:
-        {{
-            "interests": {{
-                "activities": "string, list of activities",
-                "preferences": "string, list of preferences",
-                "pastimes": "string, list of pastimes",
-                "Purchase_goals": "string, list of purchase intentions"
-            }}
-        }}
+1. Search for product reviews and relevant keywords and phrases related to users who have used {audience}.
+2. Focus strictly on keywords and phrases, broken down into the following categories:
+- Key Features (e.g., "ergonomic design", "durable construction")
+- User Sentiments (e.g., "highly satisfied", "excellent value")
+- Common Issues (e.g., "difficult assembly", "shipping problems")
+- Recommendations (e.g., "consider professional installation", "watch tutorial videos first")
 
-        Note: Each category will be displayed with its corresponding icon in the final output:
-        - Activities: 
-        - Preferences: 
-        - Pastimes: 
-        - Purchase Goals:
-        """
+Important: Extract the most meaningful and frequently mentioned keywords/phrases.
+For recommendations, focus on actionable solutions to common issues.
 
-KEYWORDS_PROMPT = """
-    **You are an ad targeting agent specializing in keyword and phrase segmentation.**
-
-    **Your task is:**
-
-    1. Search for product reviews and relevant keywords and phrases related to users who have used {audience}.
-    2. Focus strictly on keywords and phrases, broken down into the following categories:
-    - Key Features (e.g., "ergonomic design", "durable construction")
-    - User Sentiments (e.g., "highly satisfied", "excellent value")
-    - Common Issues (e.g., "difficult assembly", "shipping problems")
-    - Recommendations (e.g., "consider professional installation", "watch tutorial videos first")
-
-    **Important:** Extract the most meaningful and frequently mentioned keywords/phrases.
-    For recommendations, focus on actionable solutions to common issues.
-
-    **Output format:**
-
-     Return a JSON object with this exact format:
-    {{
-        "keywords": {{
-            "key_features": ["string", "string", ...],
-            "user_sentiments": ["string", "string", ...],
-            "common_issues": ["string", "string", ...],
-            "recommendations": ["string", "string", ...]
-        }}
+Return a JSON object with this exact format:
+{{
+    "keywords": {{
+        "key_features": ["string", "string", ...],
+        "user_sentiments": ["string", "string", ...],
+        "common_issues": ["string", "string", ...],
+        "recommendations": ["string", "string", ...]
     }}
-    """
+}}
 
-USAGE_BEHAVIOR_PROMPT = """You are an ad targeting agent specializing in behavioral segmentation. 
-    Your task is: 
-        1. Search for product reviews related to users who have used {audience}. 
-        2. Analyze the searched product reviews to: 
-            - Provide actionable recommendations on how customers can maximize the benefits of these products, based on observed usage patterns.
-            - Identify specific scenarios or enviornments where customers find the most value in using these products, citing reviewer names when availabale in brackets at the end of each sentence.
-            - Break down the frequency of usage, citing reviewer names when available in brackets at the end of each sentence.
-            - Based on these insights, produce concrete and actionable recommendations on the usage patterns identified.
+Format the output for display with:
+
+🔍 Keyword Analysis:
+
+💎 Key Features:
+- [List of key features]
+
+😊 User Sentiments:
+- [List of user sentiments]
+
+⚠️ Common Issues:
+- [List of common issues]
+
+💡 User Recommendations:
+- [List of recommendations]
+'''
+
+USAGE_BEHAVIOR_PROMPT = '''You are an ad targeting agent specializing in behavioral segmentation. 
+Your task is: 
+    1. Search for product reviews related to users who have used {audience}. 
+    2. Analyze the searched product reviews to: 
+        - Provide actionable recommendations on how customers can maximize the benefits of these products, based on observed usage patterns.
+        - Identify specific scenarios or environments where customers find the most value in using these products, citing reviewer names when available in brackets at the end of each sentence.
+        - Break down the frequency of usage, citing reviewer names when available in brackets at the end of each sentence.
+        - Based on these insights, produce concrete and actionable recommendations on the usage patterns identified.
 
 
-    Output format: 
-        Return a JSON object with this exact format:
-        {{
-            "behavior": {{
-                "usage_summary": "string, 2-sentence summary",
-                "usage_scenarios": ["string (with names in brackets)", ...],
-                "usage_frequency": ["string (with names in brackets)", ...],
-                "recommendations": "string containing ONE specific marketing recommendation that directly addresses the observed patterns, scenarios and frequency of usage of the customer and product. Focusing on using gained insight to improve the product."
-            }}
-        }}
-    """
-
-SATISFACTION_BEHAVIOR_PROMPT = """**You are an ad targeting agent specializing in behavioral segmentation.**
-
-    **Your task is**:
-
-    1. Search for product reviews based on users who have used {audience}. 
-
-    2. Analyze the searched product reviews to:
-        - Recommend how businesses can leverage customer satisfaction insights and sentiment analysis to improve star ratings and overall user experience. 
-        - Highlight the most effective ways to amplify key positive aspects that customers appreciate, citing reviewer names when available in brackets at the end of each sentence. 
-        - Identify critical pain points and provide strategies to address them, citing reviewer names when available in brackets at the end of each sentence. 
-        - Determine any correlation between the sentiments expressed and star ratings, offering recommendations on how to improve lower-rated experiences. 
-        - Provide an overall assessment of customer satisfaction with strategic recommendations for enhancing it.
-        - Produce actionable recommendations based on the satisfaction patterns identified, ensuring measurable improvements in customer experience and product perception.
-    3. Do not provide any further marketing strategy recommendations.
-
-    4. Ensure all reviewer names are mentioned at the end of the sentence in a bracket format.
-
-    **Output format**:
-    Return a JSON object with this exact format:
-    {{
-        "behavior": {{
-            "positive_aspects": ["string (with names in brackets)", ...],
-            "negative_aspects": ["string (with names in brackets)", ...],
-            "rating_correlation": "string, correlation analysis",
-            "recommendations": "string containing a single recommendation or a list of recommendations that directly address the satisfaction patterns identified"
-        }}
+Return a JSON object with this exact format:
+{{
+    "behavior": {{
+        "usage_summary": "string, 2-sentence summary",
+        "usage_scenarios": ["string (with names in brackets)", ...],
+        "usage_frequency": ["string (with names in brackets)", ...],
+        "recommendations": "string containing ONE specific marketing recommendation that directly addresses the observed patterns, scenarios and frequency of usage of the customer and product. Focusing on using gained insight to improve the product."
     }}
-"""
+}}
 
-PURCHASE_BEHAVIOR_PROMPT = """**You are an ad targeting agent specializing in behavioral segmentation.**
+Format the output for display with:
 
-    **Your task is**:
+📊 Usage Behavior Analysis:
 
-    1. Search for product reviews based on users who have used {audience}. 
+📝 Usage Summary:
+[2-sentence summary]
 
-    2. Analyze the searched product reviews to:
-        - Highlight any emerging trends in the purchase behavior of the customers. If there seems to be no trends, state that there are no trends.
-        - Determine when customers are purchasing the products, recommending strategies to optimize sales based on seasonal or time-based trends. 
-        - Analyze the frequency of product mentions in customer reviews to gauge demand and purchasing behavior. 
-        - Identify the motivations behind customers purchasing the products and recommend ways to enhance product appeal.
-        - Provide an overall recommendation of customer purchase behavior with insights on how businesses can adapt to maximize conversions. 
-        - Generate actionable recommendations based on the purchase behavior patterns identified, ensuring improved targeting, marketing, and sales strategies. 
-        
-    3. Do not provide any further marketing strategy recommendations.
+🔄 Usage Scenarios:
+- [List of scenarios with reviewer names]
 
-    4. Ensure all reviewer names are mentioned at the end of the sentence in a bracket format.
+⏱️ Usage Frequency:
+- [List of frequency patterns with reviewer names]
+'''
 
-    **Output format**:
-    Return a JSON object with this exact format:
-    {{
-        "behavior": {{
-            "purchase_trends": ["string (with names in brackets)", ...],
-            "purchase_timing": ["string (with names in brackets)", ...],
-            "purchase_frequency": ["string (with names in brackets)", ...],
-            "purchase_motivations": ["string (with names in brackets)", ...],
-            "overall_summary": "string summarizing overall purchase behavior patterns",
-            "recommendations": "string containing a single recommendation or a list of recommendations that directly address the purchase behavior patterns identified"
-        }}
+SATISFACTION_BEHAVIOR_PROMPT = '''You are an ad targeting agent specializing in behavioral segmentation.
+
+Your task is:
+
+1. Search for product reviews based on users who have used {audience}. 
+
+2. Analyze the searched product reviews to:
+    - Recommend how businesses can leverage customer satisfaction insights and sentiment analysis to improve star ratings and overall user experience. 
+    - Highlight the most effective ways to amplify key positive aspects that customers appreciate, citing reviewer names when available in brackets at the end of each sentence. 
+    - Identify critical pain points and provide strategies to address them, citing reviewer names when available in brackets at the end of each sentence. 
+    - Determine any correlation between the sentiments expressed and star ratings, offering recommendations on how to improve lower-rated experiences. 
+    - Provide an overall assessment of customer satisfaction with strategic recommendations for enhancing it.
+    - Produce actionable recommendations based on the satisfaction patterns identified, ensuring measurable improvements in customer experience and product perception.
+
+3. Do not provide any further marketing strategy recommendations.
+
+4. Ensure all reviewer names are mentioned at the end of the sentence in a bracket format.
+
+Return a JSON object with this exact format:
+{{
+    "behavior": {{
+        "positive_aspects": ["string (with names in brackets)", ...],
+        "negative_aspects": ["string (with names in brackets)", ...],
+        "rating_correlation": "string, correlation analysis",
+        "recommendations": "string containing a single recommendation or a list of recommendations that directly address the satisfaction patterns identified"
     }}
-"""
+}}
 
-PERSONALITY_PROMPT = """**You are an ad targeting agent specializing in psychographic segmentation.**
+Format the output for display with:
 
-    **Your task is:**
+😊 Customer Satisfaction Analysis:
 
-    1. Search for product reviews based on users who have used {audience}. 
+👍 Positive Aspects:
+- [List of positive aspects with reviewer names]
 
-    2. Analyze the searched product reviews to:
-        - Recommend how the product aligns with the users' personality trait, emphasizing preferences, attitudes, and behaviors in a concise 2 sentence summary.
-        - Identify and analyze key personality traits mentioned by customers, citing reviewer names when available in brakets, and explain their impact on product perception. 
-        - Assess how well the product fits different personality types and provide strategic insights on enhancing alignment with user preferences. 
-        - Generate actionable recommendations based on identified personality traits, ensuring a more personalized and engaging user experience. 
-    3. Do not provide any further marketing strategy recommendations.
+👎 Negative Aspects:
+- [List of negative aspects with reviewer names]
 
-    4. Ensure all reviewer names are mentioned at the end of the sentence in a bracket format.
+⭐ Rating Correlation:
+[Correlation analysis]
+'''
 
-    **Output format:**
-    Return a JSON object with this exact format:
-    {{
-        "psychographic": {{
-            "personality_traits": ["string (with names in brackets)", ...],
-            "personality_fit": ["string (with names in brackets)", ...],
-            "psychographic_recommendations": "string containing a single recommendation or a list of recommendations that directly address the personality traits identified"
-        }}
+PURCHASE_BEHAVIOR_PROMPT = '''You are an ad targeting agent specializing in behavioral segmentation.
+
+Your task is:
+
+1. Search for product reviews based on users who have used {audience}. 
+
+2. Analyze the searched product reviews to:
+    - Highlight any emerging trends in the purchase behavior of the customers. If there seems to be no trends, state that there are no trends.
+    - Determine when customers are purchasing the products, recommending strategies to optimize sales based on seasonal or time-based trends. 
+    - Analyze the frequency of product mentions in customer reviews to gauge demand and purchasing behavior. 
+    - Identify the motivations behind customers purchasing the products and recommend ways to enhance product appeal.
+    - Provide an overall recommendation of customer purchase behavior with insights on how businesses can adapt to maximize conversions. 
+    - Generate actionable recommendations based on the purchase behavior patterns identified, ensuring improved targeting, marketing, and sales strategies. 
+    
+3. Do not provide any further marketing strategy recommendations.
+
+4. Ensure all reviewer names are mentioned at the end of the sentence in a bracket format.
+
+Return a JSON object with this exact format:
+{{
+    "behavior": {{
+        "purchase_trends": ["string (with names in brackets)", ...],
+        "purchase_timing": ["string (with names in brackets)", ...],
+        "purchase_frequency": ["string (with names in brackets)", ...],
+        "purchase_motivations": ["string (with names in brackets)", ...],
+        "overall_summary": "string summarizing overall purchase behavior patterns",
+        "recommendations": "string containing a single recommendation or a list of recommendations that directly address the purchase behavior patterns identified"
     }}
-"""
+}}
+
+Format the output for display with:
+
+🛒 Purchase Behavior Analysis:
+
+📈 Purchase Trends:
+- [List of trends with reviewer names]
+
+🕒 Purchase Timing:
+- [List of timing patterns with reviewer names]
+
+🔄 Purchase Frequency:
+- [List of frequency patterns with reviewer names]
+
+💭 Purchase Motivations:
+- [List of motivations with reviewer names]
+
+📝 Overall Summary:
+[Summary of purchase behavior patterns]
+'''
+
+PERSONALITY_PROMPT = '''You are an ad targeting agent specializing in psychographic segmentation.
+
+Your task is:
+
+1. Search for product reviews based on users who have used {audience}. 
+
+2. Analyze the searched product reviews to:
+    - Recommend how the product aligns with the users' personality trait, emphasizing preferences, attitudes, and behaviors in a concise 2 sentence summary.
+    - Identify and analyze key personality traits mentioned by customers, citing reviewer names when available in brackets, and explain their impact on product perception. 
+    - Assess how well the product fits different personality types and provide strategic insights on enhancing alignment with user preferences. 
+    - Generate actionable recommendations based on identified personality traits, ensuring a more personalized and engaging user experience. 
+
+3. Do not provide any further marketing strategy recommendations.
+
+4. Ensure all reviewer names are mentioned at the end of the sentence in a bracket format.
+
+Return a JSON object with this exact format:
+{{
+    "psychographic": {{
+        "personality_traits": ["string (with names in brackets)", ...],
+        "personality_fit": ["string (with names in brackets)", ...],
+        "psychographic_recommendations": "string containing a single recommendation or a list of recommendations that directly address the personality traits identified"
+    }}
+}}
+
+Format the output for display with:
+
+🧠 Personality Trait Analysis:
+
+👤 Key Personality Traits:
+- [List of traits with reviewer names]
+
+✅ Personality Fit:
+- [List of fit factors with reviewer names]
+'''
 
 LIFESTYLE_PROMPT = """You are an ad targeting agent specializing in psychographic segmentation.
 
