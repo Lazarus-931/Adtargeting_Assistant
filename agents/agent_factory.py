@@ -1,13 +1,6 @@
-from antml:function_calls import artifacts
-
-artifacts.create(
-    "agent_factory.py",
-    "application/vnd.ant.code",
-    language="python",
-    title="Agent Factory",
-    content="""# agent_factory.py
+# agents/agent_factory.py
 from typing import Dict, Any, Callable
-from prompt_templates import PromptManager
+from prompts.prompt_templates import PromptManager
 from data.vector_db_connector import VectorDB
 from data.csv_connector import CSVData
 from utils.llm import call_llm
@@ -29,21 +22,17 @@ def create_analysis_agent(
         # Extract data from state
         question = state["question"]
         audience = state["audience"]
+        relevant_data = state.get("data", [])
         
         # Update progress
-        progress.update_status(agent_type, audience, "Retrieving data")
-        
-        # Get relevant data from sources
-        vector_results = vector_db.search(audience, limit=50)
-        csv_results = csv_data.search(audience)
-        relevant_data = list(set(vector_results + csv_results))[:100]
+        progress.update_status(agent_type, audience, f"Analyzing {agent_type}")
         
         # Format the prompt
         prompt = prompt_manager.get_prompt(agent_type, audience, relevant_data)
         
         # Call LLM
-        progress.update_status(agent_type, audience, f"Analyzing {agent_type}")
-        response = call_llm(prompt)
+        progress.update_status(agent_type, audience, f"Processing with LLM")
+        response = call_llm(prompt, relevant_data)
         
         # Parse and format
         progress.update_status(agent_type, audience, "Formatting results")
@@ -64,5 +53,3 @@ def create_analysis_agent(
         return new_state
     
     return agent_func
-"""
-)
