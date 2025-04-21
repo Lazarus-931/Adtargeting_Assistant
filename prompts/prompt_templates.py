@@ -1,4 +1,3 @@
-
 # prompts/prompt_templates.py
 from typing import Dict, Any, List
 
@@ -49,6 +48,8 @@ Focus strictly on users from the following demographics (with their correspondin
 🎓 Education level (limited to 'High school or less', 'Some college', 'Bachelor's degree', 'Graduate degree')
 
 Important: Make reasonable assumptions if no direct information is found based on the demographics of typical {audience} users.
+
+CRITICAL: You must NEVER ask the user for more data or say that there is no information. ALWAYS generate a best-guess demographic profile for the audience/product, even if you have to make assumptions. Do not include any comments or requests for more information in your output.
 
 Return a JSON object with this exact format:
 {{

@@ -34,7 +34,7 @@ class BaseAgent:
         # Combine and deduplicate results
         combined_results = list(set(vector_results + csv_results))
         
-        return combined_results[:100]  # Limit to 100 most relevant results
+        return combined_results[:1000]  # Limit to 100 most relevant results
 
 
 class SupervisorAgent(BaseAgent):
@@ -469,51 +469,22 @@ class RecommendationAgent(BaseAgent):
         data = analysis_result["structured_data"]
         audience = analysis_result["audience"]
         
-        # Create the introduction based on agent type
-        introduction = self.create_introduction(agent_type)
-        
         # Generate recommendations based on agent type and data
         recommendations = self.generate_recommendations(data, agent_type, audience)
         
         # Add recommendations to the result
         enhanced_result = analysis_result.copy()
         enhanced_result["recommendations"] = {
-            "introduction": introduction,
             "recommendations": recommendations
         }
         
-        # Update the formatted output to include recommendations
+        # Update the formatted output to include recommendations (no introduction)
         enhanced_result["formatted_output"] = self.update_output_format(
             analysis_result["formatted_output"], 
-            introduction,
             recommendations
         )
         
         return enhanced_result
-    
-    def create_introduction(self, agent_type: str) -> str:
-        """Create a contextually appropriate introduction based on agent type"""
-        introductions = {
-            "demographics": "I just got info from the demographic agent which means I will develop a recommendation that is based on these insights, concrete and actionable recommendations that can be used.",
-            
-            "interests": "I just got info from the interests agent which means I will develop a recommendation that is based on these insights, concrete and actionable recommendations that can be used.",
-            
-            "keywords": "I just got info from the keywords agent which means I will develop a recommendation that is based on these feature insights, concrete and actionable recommendations that can be used.",
-            
-            "usage": "I just got info from the usage behavior agent which means I will develop a recommendation that is based on these usage pattern insights, concrete and actionable recommendations that can be used.",
-            
-            "satisfaction": "I just got info from the satisfaction agent which means I will develop a recommendation that is based on these customer satisfaction insights, concrete and actionable recommendations that can be used.",
-            
-            "purchase": "I just got info from the purchase behavior agent which means I will develop a recommendation that is based on these purchasing pattern insights, concrete and actionable recommendations that can be used.",
-            
-            "personality": "I just got info from the personality agent which means I will develop a recommendation that is based on these personality trait insights, concrete and actionable recommendations that can be used.",
-            
-            "lifestyle": "I just got info from the lifestyle agent which means I will develop a recommendation that is based on these lifestyle pattern insights, concrete and actionable recommendations that can be used.",
-            
-            "values": "I just got info from the values agent which means I will develop a recommendation that is based on these core values insights, concrete and actionable recommendations that can be used."
-        }
-        
-        return introductions.get(agent_type, "Based on these insights, I'll provide concrete and actionable recommendations that can be used.")
     
     def generate_recommendations(self, data: Dict[str, Any], agent_type: str, audience: str) -> List[str]:
         """Generate specific recommendations based on agent type and data"""
@@ -545,13 +516,10 @@ class RecommendationAgent(BaseAgent):
         
         return bullet_points if bullet_points else ["• " + recommendations_response.strip()]
     
-    def update_output_format(self, original_output: str, introduction: str, recommendations: List[str]) -> str:
-        """Add the recommendations to the formatted output"""
+    def update_output_format(self, original_output: str, recommendations: List[str]) -> str:
+        """Add the recommendations to the formatted output (no introduction)"""
         # Add a recommendations section to the original output
         recommendation_section = "\n\n📋 **Recommendations**:\n"
-        recommendation_section += introduction + "\n\n"
-        
         for rec in recommendations:
             recommendation_section += rec + "\n"
-        
         return original_output + recommendation_section
