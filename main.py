@@ -3,10 +3,12 @@ import argparse
 import sys
 from typing import Dict, Any
 
-from agents.agents import SupervisorAgent
 from data.vector_db_connector import VectorDB
 from data.csv_connector import CSVData
 from utils.progress import progress
+from prompts.prompt_templates import PromptManager
+from agents.improved_agent_factory import create_agent_registry
+from workflow.manager import WorkflowManager
 import config
 
 
@@ -20,31 +22,39 @@ def parse_args():
     parser.add_argument("--vector-db-path", type=str, default=config.DEFAULT_VECTOR_DB_PATH,
                       help="Path to the vector database")
     
+    parser.add_argument("--model", type=str, default="gemma3:27b-it-qat",
+                      help="LLM model to use")
+    
     return parser.parse_args()
 
 
-def process_question(question: str, supervisor: SupervisorAgent) -> Dict[str, Any]:
-    """Process a single question with the supervisor agent"""
-    return supervisor.process_question(question)
-
-
 def main():
-    """Main entry point for the segmentation system"""
+    """Main entry point for the application"""
+    # Parse command line arguments
     args = parse_args()
     
     # Initialize data sources
     try:
+        print("Initializing data sources...")
         csv_data = CSVData(args.csv_path)
         vector_db = VectorDB(args.vector_db_path)
     except Exception as e:
         print(f"Error initializing data sources: {e}")
         sys.exit(1)
     
-    # Initialize supervisor agent
-    supervisor = SupervisorAgent(vector_db, csv_data)
+    # Initialize prompt manager
+    prompt_manager = PromptManager()
+    
+    # Create agent registry
+    print("Initializing analysis agents...")
+    agent_registry = create_agent_registry(prompt_manager.templates, vector_db, csv_data)
+    
+    # Create workflow manager
+    print("Creating workflow...")
+    workflow_manager = WorkflowManager(agent_registry, vector_db, csv_data)
     
     # Interactive mode
-    print("Audience Segmentation System")
+    print("\n=== Audience Segmentation System ===")
     print("Type 'exit' or 'quit' to exit")
     
     while True:
@@ -56,16 +66,13 @@ def main():
         
         # Process the question
         try:
-            result = process_question(question, supervisor)
-            
-            if result.get("status") == "clarification_needed":
-                # Need more information from user
-                print(f"\n{result['message']}")
-            else:
-                # Output the formatted result
-                print(f"\n{result['formatted_output']}")
+            print("\nProcessing your question...")
+            result = workflow_manager.process_question(question)
+            print(f"\n{result['formatted_output']}")
         except Exception as e:
             print(f"Error processing question: {e}")
+            import traceback
+            traceback.print_exc()
 
 
 if __name__ == "__main__":
