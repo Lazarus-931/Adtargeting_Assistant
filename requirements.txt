@@ -5,3 +5,4 @@ torch>=2.0.0
 sentence-transformers>=2.2.2
 faiss-cpu>=1.7.4
 tqdm>=4.66.1
+keras==2.11.0
