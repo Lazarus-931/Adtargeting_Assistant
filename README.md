@@ -4,9 +4,9 @@
 ## Set-up
 
 Make sure you install all of the requirments
-'''
-<pip install -r requirements.txt>
-'''
+```
+ffffff
+```
 
 Next, set up OpenAI or any other LLM of your choice
 '''export OPENAI_API_KEY=your_api_key_here'''
