@@ -34,7 +34,6 @@ class VectorDB:
         else:
             # Create new database
             print(f"Creating new vector database at {db_path}")
-            os.makedirs(db_path, exist_ok=True)
             self.initialize_database()
     
     def initialize_database(self):

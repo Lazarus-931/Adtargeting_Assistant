@@ -59,7 +59,8 @@ Return a JSON object with this exact format:
         "location": "string, one of ['Urban areas', 'Suburban areas', 'Rural areas', 'Metropolitan areas']",
         "income_level": "string, one of ['Low income', 'Lower-middle income', 'Middle income', 'Upper-middle income', 'High income']",
         "education_level": "string, one of ['High school or less', 'Some college', 'Bachelor's degree', 'Graduate degree']",
-    }}
+    }},
+    "recommendation": "string, specific recommendation based on demographic insights"
 }}
 
 Format the output exactly like this example:
@@ -71,6 +72,8 @@ Format the output exactly like this example:
 📍 Location: Urban areas
 💰 Income Level: Low income
 🎓 Education Level: Bachelor's degree
+
+📝 Recommendation: Focus on mobile-first marketing campaigns targeting urban areas with value-oriented messaging for budget-conscious young adults
 '''
 
 INTERESTS_PROMPT = '''You are an ad targeting agent specializing in interest-based segmentation.

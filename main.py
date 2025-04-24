@@ -1,6 +1,7 @@
 # main.py
 import argparse
 import sys
+import subprocess
 from typing import Dict, Any
 
 from agents.agents import SupervisorAgent
@@ -31,6 +32,15 @@ def process_question(question: str, supervisor: SupervisorAgent) -> Dict[str, An
 def main():
     """Main entry point for the segmentation system"""
     args = parse_args()
+
+    # Always run setup.py first with the same arguments
+    setup_cmd = [sys.executable, "setup.py", "--csv-path", args.csv_path, "--vector-db-path", args.vector_db_path]
+    try:
+        print(f"Running setup: {' '.join(setup_cmd)}")
+        subprocess.run(setup_cmd, check=True)
+    except Exception as e:
+        print(f"Error running setup.py: {e}")
+        sys.exit(1)
     
     # Initialize data sources
     try:
