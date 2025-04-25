@@ -51,6 +51,8 @@ Important: Make reasonable assumptions if no direct information is found based o
 
 CRITICAL: You must NEVER ask the user for more data or say that there is no information. ALWAYS generate a best-guess demographic profile for the audience/product, even if you have to make assumptions. Do not include any comments or requests for more information in your output.
 
+After providing the demographic analysis, you MUST include 3-5 specific, actionable recommendations based on these demographics to help businesses better target and serve this audience. Each recommendation should be clearly linked to a specific demographic insight.
+
 Return a JSON object with this exact format:
 {{
     "demographics": {{
@@ -60,20 +62,24 @@ Return a JSON object with this exact format:
         "income_level": "string, one of ['Low income', 'Lower-middle income', 'Middle income', 'Upper-middle income', 'High income']",
         "education_level": "string, one of ['High school or less', 'Some college', 'Bachelor's degree', 'Graduate degree']",
     }},
-    "recommendation": "string, specific recommendation based on demographic insights"
+    "recommendations": ["string", "string", ...]
 }}
 
 Format the output exactly like this example:
 
 👥 User Demographics Analysis:
 
-👤 Age Range: 12-20
+👤 Age Range: 25-34
 ⚧ Gender: Male
 📍 Location: Urban areas
-💰 Income Level: Low income
+💰 Income Level: Middle income
 🎓 Education Level: Bachelor's degree
 
-📝 Recommendation: Focus on mobile-first marketing campaigns targeting urban areas with value-oriented messaging for budget-conscious young adults
+📋 **Recommendations**:
+• Develop mobile-first marketing campaigns targeting urban professionals on their commute
+• Create aspirational messaging that appeals to career-building professionals with disposable income
+• Offer subscription models that align with monthly budget planning of young professionals
+• Partner with urban lifestyle brands for cross-promotional opportunities
 '''
 
 INTERESTS_PROMPT = '''You are an ad targeting agent specializing in interest-based segmentation.
@@ -89,6 +95,8 @@ Your task is:
 
 Important: Make reasonable assumptions if no direct information is found based on the typical interests of {audience} users.
 
+After providing the interest analysis, you MUST include 3-5 specific, actionable recommendations based on these interests to help businesses better target and serve this audience. Each recommendation should be clearly linked to specific interests.
+
 Return a JSON object with this exact format:
 {{
     "interests": {{
@@ -96,7 +104,8 @@ Return a JSON object with this exact format:
         "preferences": "string, list of preferences",
         "pastimes": "string, list of pastimes",
         "purchase_goals": "string, list of purchase intentions"
-    }}
+    }},
+    "recommendations": ["string", "string", ...]
 }}
 
 Format the output for display with:
@@ -114,6 +123,13 @@ Format the output for display with:
 
 🎁 Purchase Goals:
 - [List of purchase goals]
+
+📋 **Recommendations**:
+• [First recommendation based on interests]
+• [Second recommendation based on interests]
+• [Third recommendation based on interests]
+• [Fourth recommendation based on interests]
+• [Fifth recommendation based on interests]
 '''
 
 KEYWORDS_PROMPT = '''You are an ad targeting agent specializing in keyword and phrase segmentation.
@@ -125,10 +141,12 @@ Your task is:
 - Key Features (e.g., "ergonomic design", "durable construction")
 - User Sentiments (e.g., "highly satisfied", "excellent value")
 - Common Issues (e.g., "difficult assembly", "shipping problems")
-- Recommendations (e.g., "consider professional installation", "watch tutorial videos first")
+- Improvements (e.g., "consider professional installation", "watch tutorial videos first")
 
 Important: Extract the most meaningful and frequently mentioned keywords/phrases.
-For recommendations, focus on actionable solutions to common issues.
+For improvements, focus on actionable solutions to common issues.
+
+After providing the keyword analysis, you MUST include 3-5 specific, actionable recommendations based on these keywords and phrases to help businesses better target and serve this audience. Each recommendation should address key features, sentiments, or issues you've identified.
 
 Return a JSON object with this exact format:
 {{
@@ -136,8 +154,9 @@ Return a JSON object with this exact format:
         "key_features": ["string", "string", ...],
         "user_sentiments": ["string", "string", ...],
         "common_issues": ["string", "string", ...],
-        "recommendations": ["string", "string", ...]
-    }}
+        "improvements": ["string", "string", ...]
+    }},
+    "recommendations": ["string", "string", ...]
 }}
 
 Format the output for display with:
@@ -153,8 +172,15 @@ Format the output for display with:
 ⚠️ Common Issues:
 - [List of common issues]
 
-💡 User Recommendations:
-- [List of recommendations]
+💡 Improvements:
+- [List of improvements]
+
+📋 **Recommendations**:
+• [First recommendation based on keywords]
+• [Second recommendation based on keywords]
+• [Third recommendation based on keywords]
+• [Fourth recommendation based on keywords]
+• [Fifth recommendation based on keywords]
 '''
 
 USAGE_BEHAVIOR_PROMPT = '''You are an ad targeting agent specializing in behavioral segmentation. 
@@ -166,15 +192,16 @@ Your task is:
         - Break down the frequency of usage, citing reviewer names when available in brackets at the end of each sentence.
         - Based on these insights, produce concrete and actionable recommendations on the usage patterns identified.
 
+After providing the usage behavior analysis, you MUST include 3-5 specific, actionable recommendations based on these usage patterns to help businesses better target and serve this audience. Each recommendation should directly address observed usage scenarios or frequency patterns.
 
 Return a JSON object with this exact format:
 {{
     "behavior": {{
         "usage_summary": "string, 2-sentence summary",
         "usage_scenarios": ["string (with names in brackets)", ...],
-        "usage_frequency": ["string (with names in brackets)", ...],
-        "recommendations": "string containing ONE specific marketing recommendation that directly addresses the observed patterns, scenarios and frequency of usage of the customer and product. Focusing on using gained insight to improve the product."
-    }}
+        "usage_frequency": ["string (with names in brackets)", ...]
+    }},
+    "recommendations": ["string", "string", ...]
 }}
 
 Format the output for display with:
@@ -189,6 +216,13 @@ Format the output for display with:
 
 ⏱️ Usage Frequency:
 - [List of frequency patterns with reviewer names]
+
+📋 **Recommendations**:
+• [First recommendation based on usage patterns]
+• [Second recommendation based on usage patterns]
+• [Third recommendation based on usage patterns]
+• [Fourth recommendation based on usage patterns]
+• [Fifth recommendation based on usage patterns]
 '''
 
 SATISFACTION_BEHAVIOR_PROMPT = '''You are an ad targeting agent specializing in behavioral segmentation.
@@ -209,14 +243,16 @@ Your task is:
 
 4. Ensure all reviewer names are mentioned at the end of the sentence in a bracket format.
 
+After providing the satisfaction analysis, you MUST include 3-5 specific, actionable recommendations based on the positive and negative aspects identified to help businesses improve customer satisfaction. Each recommendation should directly address specific satisfaction issues identified.
+
 Return a JSON object with this exact format:
 {{
     "behavior": {{
         "positive_aspects": ["string (with names in brackets)", ...],
         "negative_aspects": ["string (with names in brackets)", ...],
-        "rating_correlation": "string, correlation analysis",
-        "recommendations": "string containing a single recommendation or a list of recommendations that directly address the satisfaction patterns identified"
-    }}
+        "rating_correlation": "string, correlation analysis"
+    }},
+    "recommendations": ["string", "string", ...]
 }}
 
 Format the output for display with:
@@ -231,6 +267,13 @@ Format the output for display with:
 
 ⭐ Rating Correlation:
 [Correlation analysis]
+
+📋 **Recommendations**:
+• [First recommendation based on satisfaction analysis]
+• [Second recommendation based on satisfaction analysis]
+• [Third recommendation based on satisfaction analysis]
+• [Fourth recommendation based on satisfaction analysis]
+• [Fifth recommendation based on satisfaction analysis]
 '''
 
 PURCHASE_BEHAVIOR_PROMPT = '''You are an ad targeting agent specializing in behavioral segmentation.
@@ -251,6 +294,8 @@ Your task is:
 
 4. Ensure all reviewer names are mentioned at the end of the sentence in a bracket format.
 
+After providing the purchase behavior analysis, you MUST include 3-5 specific, actionable recommendations based on the purchase patterns identified to help businesses optimize their sales and marketing strategies. Each recommendation should directly address specific purchase patterns, timing, frequency, or motivations identified.
+
 Return a JSON object with this exact format:
 {{
     "behavior": {{
@@ -258,9 +303,9 @@ Return a JSON object with this exact format:
         "purchase_timing": ["string (with names in brackets)", ...],
         "purchase_frequency": ["string (with names in brackets)", ...],
         "purchase_motivations": ["string (with names in brackets)", ...],
-        "overall_summary": "string summarizing overall purchase behavior patterns",
-        "recommendations": "string containing a single recommendation or a list of recommendations that directly address the purchase behavior patterns identified"
-    }}
+        "overall_summary": "string summarizing overall purchase behavior patterns"
+    }},
+    "recommendations": ["string", "string", ...]
 }}
 
 Format the output for display with:
@@ -281,6 +326,13 @@ Format the output for display with:
 
 📝 Overall Summary:
 [Summary of purchase behavior patterns]
+
+📋 **Recommendations**:
+• [First recommendation based on purchase behavior]
+• [Second recommendation based on purchase behavior]
+• [Third recommendation based on purchase behavior]
+• [Fourth recommendation based on purchase behavior]
+• [Fifth recommendation based on purchase behavior]
 '''
 
 PERSONALITY_PROMPT = '''You are an ad targeting agent specializing in psychographic segmentation.
@@ -299,13 +351,15 @@ Your task is:
 
 4. Ensure all reviewer names are mentioned at the end of the sentence in a bracket format.
 
+After providing the personality trait analysis, you MUST include 3-5 specific, actionable recommendations based on the personality traits and product fit identified. Each recommendation should directly address specific personality traits identified and help businesses better connect with this audience.
+
 Return a JSON object with this exact format:
 {{
     "psychographic": {{
         "personality_traits": ["string (with names in brackets)", ...],
-        "personality_fit": ["string (with names in brackets)", ...],
-        "psychographic_recommendations": "string containing a single recommendation or a list of recommendations that directly address the personality traits identified"
-    }}
+        "personality_fit": ["string (with names in brackets)", ...]
+    }},
+    "recommendations": ["string", "string", ...]
 }}
 
 Format the output for display with:
@@ -317,6 +371,13 @@ Format the output for display with:
 
 ✅ Personality Fit:
 - [List of fit factors with reviewer names]
+
+📋 **Recommendations**:
+• [First recommendation based on personality traits]
+• [Second recommendation based on personality traits]
+• [Third recommendation based on personality traits]
+• [Fourth recommendation based on personality traits]
+• [Fifth recommendation based on personality traits]
 '''
 
 LIFESTYLE_PROMPT = """You are an ad targeting agent specializing in psychographic segmentation.
@@ -335,6 +396,8 @@ LIFESTYLE_PROMPT = """You are an ad targeting agent specializing in psychographi
 
     4. IMPORTANT: For EVERY point you make, you MUST cite at least one reviewer name in brackets [name]. If no specific reviewer name is available, use a descriptive identifier like [Parent Reviewer] or [Tech Enthusiast]. Never leave brackets empty.
 
+    After providing the lifestyle analysis, you MUST include 3-5 specific, actionable recommendations based on the lifestyle attributes identified to help businesses better align their products with users' lifestyles. Each recommendation should directly address specific lifestyle integration points identified.
+    
     Format the output exactly like this example:
 
     👥 User Lifestyle Analysis:
@@ -354,17 +417,21 @@ LIFESTYLE_PROMPT = """You are an ad targeting agent specializing in psychographi
     - Part of home office setup [Lisa]
     - Family entertainment choice [Gaming Parent]
 
-    📋 Recommendation:
-    Based on the observed integration into both active and relaxation routines, develop a quick-switch mode for different times of day.
+    📋 **Recommendations**:
+    • Develop "morning routine" quick-start mode to streamline early usage patterns
+    • Create "relaxation mode" with calming interface elements for evening use
+    • Design weekend-focused features that facilitate family group activities
+    • Emphasize eco-friendly aspects of product lifecycle in marketing
+    • Highlight minimalist design elements in product presentation
 
     Please provide your analysis in JSON format with this exact structure:
     {{
         "psychographic": {{
             "daily_routines": ["string [name]", ...],
             "lifestyle_preferences": ["string [name]", ...],
-            "product_integration": ["string [name]", ...],
-            "recommendations": "string containing a single recommendation or a list of recommendations that directly address the core values identified"
-        }}
+            "product_integration": ["string [name]", ...]
+        }},
+        "recommendations": ["string", "string", ...]
     }}
 """
 
@@ -384,6 +451,8 @@ VALUES_PROMPT = """**You are an ad targeting agent specializing in psychographic
 
     4. Ensure all reviewer names are mentioned at the end of each value in brackets [name], not parentheses.
 
+    After providing the values analysis, you MUST include 3-5 specific, actionable recommendations based on the values identified to help businesses better align their products with users' core values. Each recommendation should directly address specific value alignments or conflicts identified.
+
     Format the output exactly like this example:
 
     🎯 **Personal Values**:
@@ -400,13 +469,20 @@ VALUES_PROMPT = """**You are an ad targeting agent specializing in psychographic
     • Speed [mary]
     • Overexcitement [linda]
 
+    📋 **Recommendations**:
+    • Enhance playful elements while maintaining safety features
+    • Develop premium tier that emphasizes durability for safety-conscious users
+    • Create budget option that preserves core functionality
+    • Include speed controls to balance excitement with safety
+    • Highlight value proposition in all marketing materials
+
     Return a JSON object with this exact format:
     {{
         "psychographic": {{
             "personal_values": ["string [name]", ...],
             "value_alignment": ["string [name]", ...],
-            "value_conflicts": ["string [name]", ...],
-            "recommendations": "string containing ONE specific recommendation that directly addresses the identified value patterns"
-        }}
+            "value_conflicts": ["string [name]", ...]
+        }},
+        "recommendations": ["string", "string", ...]
     }}
 """

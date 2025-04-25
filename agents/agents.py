@@ -34,7 +34,7 @@ class BaseAgent:
         # Combine and deduplicate results
         combined_results = list(set(vector_results + csv_results))
         
-        return combined_results[:1000]  # Limit to 100 most relevant results
+        return combined_results[:1000]  # Limit to 1000 most relevant results
 
 
 class SupervisorAgent(BaseAgent):
@@ -54,9 +54,6 @@ class SupervisorAgent(BaseAgent):
             "lifestyle": LifestyleAgent(vector_db, csv_data),
             "values": ValuesAgent(vector_db, csv_data)
         }
-        
-        # Initialize recommendation agent
-        self.recommendation_agent = RecommendationAgent(vector_db, csv_data)
         
     def process_question(self, user_input: str) -> Dict[str, Any]:
         """Process any user input and determine how to respond"""
@@ -88,14 +85,10 @@ class SupervisorAgent(BaseAgent):
         progress.update_status(agent_type, None, "Running analysis")
         analysis_result = agent.analyze(question_info["question"], question_info["audience"])
         
-        # Enhance with recommendations
-        progress.update_status("recommendation", None, "Adding recommendations")
-        final_result = self.recommendation_agent.enhance(analysis_result, agent_type)
-        
         progress.update_status("supervisor", None, "Complete")
         progress.stop()
         
-        return final_result
+        return analysis_result
     
     def extract_question_info(self, user_input: str) -> Dict[str, Any]:
         """Extract the core question and audience from any user input"""
@@ -456,70 +449,3 @@ class ValuesAgent(BaseAgent):
             "formatted_output": formatted_output,
             "raw_response": response
         }
-
-
-class RecommendationAgent(BaseAgent):
-    """Enhances analysis results with targeted recommendations"""
-    def __init__(self, vector_db: VectorDB, csv_data: CSVData):
-        super().__init__("recommendation", None, vector_db, csv_data)
-        
-    def enhance(self, analysis_result: Dict[str, Any], agent_type: str) -> Dict[str, Any]:
-        """Add recommendations to the analysis result"""
-        # Get the structured data
-        data = analysis_result["structured_data"]
-        audience = analysis_result["audience"]
-        
-        # Generate recommendations based on agent type and data
-        recommendations = self.generate_recommendations(data, agent_type, audience)
-        
-        # Add recommendations to the result
-        enhanced_result = analysis_result.copy()
-        enhanced_result["recommendations"] = {
-            "recommendations": recommendations
-        }
-        
-        # Update the formatted output to include recommendations (no introduction)
-        enhanced_result["formatted_output"] = self.update_output_format(
-            analysis_result["formatted_output"], 
-            recommendations
-        )
-        
-        return enhanced_result
-    
-    def generate_recommendations(self, data: Dict[str, Any], agent_type: str, audience: str) -> List[str]:
-        """Generate specific recommendations based on agent type and data"""
-        # Create a prompt to generate targeted recommendations
-        recommendation_prompt = f"""
-        Based on the following {agent_type} insights about {audience}, 
-        provide 3-5 concrete, actionable recommendations.
-        
-        Each recommendation should:
-        1. Be specific and practical
-        2. Directly relate to the insights provided
-        3. Be implementable without significant resources
-        4. Include a brief explanation of expected outcomes
-        
-        Insights:
-        {json.dumps(data, indent=2)}
-        
-        Format each recommendation as a bullet point starting with "•" followed by the recommendation.
-        """
-        
-        recommendations_response = call_llm(recommendation_prompt)
-        
-        # Extract bullet points from the response
-        bullet_points = []
-        for line in recommendations_response.split("\n"):
-            line = line.strip()
-            if line.startswith("•") or line.startswith("-"):
-                bullet_points.append(line)
-        
-        return bullet_points if bullet_points else ["• " + recommendations_response.strip()]
-    
-    def update_output_format(self, original_output: str, recommendations: List[str]) -> str:
-        """Add the recommendations to the formatted output (no introduction)"""
-        # Add a recommendations section to the original output
-        recommendation_section = "\n\n📋 **Recommendations**:\n"
-        for rec in recommendations:
-            recommendation_section += rec + "\n"
-        return original_output + recommendation_section

@@ -13,6 +13,7 @@ def main():
     parser.add_argument("--csv-path", type=str, required=True, help="Path to the CSV file")
     parser.add_argument("--vector-db-path", type=str, required=True, help="Path to the vector database directory")
     parser.add_argument("--batch-size", type=int, default=100, help="Batch size for processing")
+    parser.add_argument("--force-rebuild", action="store_true", help="Force rebuild the vector database even if it exists")
     
     args = parser.parse_args()
     
@@ -26,15 +27,25 @@ def main():
     
     print(f"Successfully loaded CSV with {len(csv_data.data)} rows")
     
-    # 2. Initialize vector database
-    print(f"Initializing vector database at {args.vector_db_path}")
+    # 2. Check if vector database exists and if we should rebuild it
+    vector_db_exists = os.path.exists(os.path.join(args.vector_db_path, "faiss_index.bin")) and \
+                      os.path.exists(os.path.join(args.vector_db_path, "data.pkl"))
+    
+    if vector_db_exists and not args.force_rebuild:
+        print(f"Vector database already exists at {args.vector_db_path}")
+        print("To rebuild, use the --force-rebuild flag")
+        print("Setup complete!")
+        return
+    
+    # 3. Initialize vector database
+    print(f"{'Rebuilding' if vector_db_exists else 'Initializing'} vector database at {args.vector_db_path}")
     vector_db = VectorDB(args.vector_db_path)
     
-    # 3. Get text data from CSV for embedding
+    # 4. Get text data from CSV for embedding
     string_cols = csv_data.data.select_dtypes(include=['object']).columns.tolist()
     print(f"Found {len(string_cols)} text columns: {', '.join(string_cols)}")
     
-    # 4. Prepare text data for embedding
+    # 5. Prepare text data for embedding
     texts = []
     
     # Format each row as a review-like text
@@ -46,11 +57,16 @@ def main():
     
     print(f"Prepared {len(texts)} text entries for embedding")
     
-    # 5. Add texts to vector database in batches
+    # 6. Add texts to vector database in batches
     batch_size = args.batch_size
+    num_batches = (len(texts) + batch_size - 1) // batch_size
+    
+    print(f"Processing {len(texts)} texts in {num_batches} batches of size {batch_size}")
+    
     for i in range(0, len(texts), batch_size):
         batch = texts[i:i+batch_size]
-        print(f"Processing batch {i//batch_size + 1}/{(len(texts) + batch_size - 1)//batch_size}")
+        progress_pct = (i//batch_size + 1) / num_batches * 100
+        print(f"Processing batch {i//batch_size + 1}/{num_batches} ({progress_pct:.1f}%)")
         vector_db.add_texts(batch)
     
     print("Setup complete!")

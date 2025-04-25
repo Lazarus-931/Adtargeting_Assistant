@@ -166,102 +166,6 @@ def conditional_router(state: Dict[str, Any]) -> str:
     # Return the agent key or default to demographics
     return agent_mapping.get(category, "demographics")
 
-def generate_recommendations(state: Dict[str, Any]) -> Dict[str, Any]:
-    """Generate recommendations based on analysis results"""
-    analysis_results = state.get("analysis_results", {})
-    
-    if not analysis_results:
-        return state
-    
-    agent_type = analysis_results.get("agent_type", "")
-    audience = analysis_results.get("audience", "")
-    structured_data = analysis_results.get("structured_data", {})
-    
-    # Create introduction based on agent type
-    introduction = create_introduction(agent_type)
-    
-    # Generate recommendations
-    recommendations = generate_specific_recommendations(structured_data, agent_type, audience)
-    
-    # Add recommendations to the result
-    new_analysis_results = analysis_results.copy()
-    new_analysis_results["recommendations"] = {
-        "introduction": introduction,
-        "recommendations": recommendations
-    }
-    
-    # Update the formatted output
-    formatted_output = analysis_results.get("formatted_output", "")
-    new_formatted_output = update_output_format(
-        formatted_output,
-        introduction,
-        recommendations
-    )
-    new_analysis_results["formatted_output"] = new_formatted_output
-    
-    # Update the state
-    new_state = state.copy()
-    new_state["analysis_results"] = new_analysis_results
-    
-    return new_state
-
-def create_introduction(agent_type: str) -> str:
-    """Create a contextually appropriate introduction based on agent type"""
-    introductions = {
-        "demographics": "Based on demographic insights, here are targeted recommendations:",
-        "interests": "Based on user interest analysis, consider these actionable recommendations:",
-        "keywords": "Based on key feature insights, here are actionable recommendations:",
-        "usage": "Based on usage pattern analysis, consider implementing these recommendations:",
-        "satisfaction": "To improve customer satisfaction, consider these targeted recommendations:",
-        "purchase": "To optimize purchase behavior, consider these strategic recommendations:",
-        "personality": "Based on personality trait analysis, consider these tailored recommendations:",
-        "lifestyle": "To better align with user lifestyles, consider these recommendations:",
-        "values": "To better connect with user values, consider these recommendations:"
-    }
-    
-    return introductions.get(agent_type, "Based on these insights, consider these recommendations:")
-
-def generate_specific_recommendations(data: Dict[str, Any], agent_type: str, audience: str) -> List[str]:
-    """Generate specific recommendations based on agent type and data"""
-    # Create a prompt to generate recommendations
-    recommendation_prompt = f"""
-    Based on the following {agent_type} insights about {audience}, 
-    provide 3-5 concrete, actionable recommendations.
-    
-    Each recommendation should:
-    1. Be specific and practical
-    2. Directly relate to the insights provided
-    3. Be implementable without significant resources
-    4. Include a brief explanation of expected outcomes
-    
-    Insights:
-    {json.dumps(data, indent=2)}
-    
-    Format each recommendation as a bullet point starting with "•" followed by the recommendation.
-    """
-    
-    recommendations_response = call_llm(recommendation_prompt)
-    
-    # Extract bullet points from the response
-    bullet_points = []
-    for line in recommendations_response.split("\n"):
-        line = line.strip()
-        if line.startswith("•") or line.startswith("-"):
-            bullet_points.append(line)
-    
-    return bullet_points if bullet_points else ["• " + recommendations_response.strip()]
-
-def update_output_format(original_output: str, introduction: str, recommendations: List[str]) -> str:
-    """Add the recommendations to the formatted output"""
-    # Add a recommendations section to the original output
-    recommendation_section = "\n\n📋 **Recommendations**:\n"
-    recommendation_section += introduction + "\n\n"
-    
-    for rec in recommendations:
-        recommendation_section += rec + "\n"
-    
-    return original_output + recommendation_section
-
 def format_output(state: Dict[str, Any]) -> Dict[str, Any]:
     """Format the final output for display"""
     analysis_results = state.get("analysis_results", {})
@@ -271,7 +175,7 @@ def format_output(state: Dict[str, Any]) -> Dict[str, Any]:
         new_state["formatted_output"] = "Sorry, I couldn't analyze your question. Please try again with a clearer question about a specific audience."
         return new_state
     
-    # The formatted output has already been updated in generate_recommendations
+    # Get the formatted output from the analysis agent directly
     formatted_output = analysis_results.get("formatted_output", "")
     
     # Update the state
@@ -304,9 +208,6 @@ def create_agent_graph():
     for agent_key, agent_func in ANALYSIS_AGENTS.items():
         workflow.add_node(agent_key, agent_func)
     
-    # Add recommendation node
-    workflow.add_node("generate_recommendations", generate_recommendations)
-    
     # Add formatter node
     workflow.add_node("format_output", format_output)
     
@@ -314,12 +215,11 @@ def create_agent_graph():
     workflow.add_edge("extract_query", "fetch_data")
     workflow.add_edge("fetch_data", conditional_router)
     
-    # Connect analysis agents
+    # Connect analysis agents directly to output formatter
     for agent_key in ANALYSIS_AGENTS.keys():
         workflow.add_edge(conditional_router, agent_key)
-        workflow.add_edge(agent_key, "generate_recommendations")
+        workflow.add_edge(agent_key, "format_output")
     
-    workflow.add_edge("generate_recommendations", "format_output")
     workflow.add_edge("format_output", END)
     
     return workflow.compile()
