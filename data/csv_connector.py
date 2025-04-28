@@ -10,7 +10,7 @@ class CSVData:
         
         try:
             # Load the CSV file
-            self.data = pd.read_csv("data.csv")
+            self.data = pd.read_csv(self.file_path, on_bad_lines="skip")
             print(f"Loaded CSV file with {len(self.data)} rows and {len(self.data.columns)} columns")
             
             # Log the first few column names to verify correct loading

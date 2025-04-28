@@ -2,7 +2,7 @@
 import os
 
 # Default paths
-DEFAULT_CSV_PATH = os.getenv("CSV_PATH", "data/reviews.csv")
+DEFAULT_CSV_PATH = os.getenv("CSV_PATH", "data.csv")
 DEFAULT_VECTOR_DB_PATH = os.getenv("VECTOR_DB_PATH", "data/vector_db")
 
 # LLM settings
