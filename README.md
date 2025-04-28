@@ -15,7 +15,7 @@ pip install streamlit
 
 1. First, run the setup.py script to ensure your vector database is initialized:
 ```bash
-python setup.py --csv-path data/data.csv --vector-db-path data/vector_db
+python3 setup.py --csv-path data/data.csv --vector-db-path data/vector_db
 ```
 
 2. Launch the Streamlit app with your data paths:

@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# run_all.py
+
 import sys
 import subprocess
 import argparse
